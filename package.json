@@ -12,14 +12,11 @@
   "scripts": {
     "dev": "cross-env DEBUG=greenlight:* nextron dev",
     "start": "cross-env NODE_ENV=production npx tsx ./main/application.ts",
-    "build": "next build",
+    "build": "next build renderer && next export -o app renderer",
     "lint": "eslint . --ext .ts && eslint renderer/ --ext .tsx",
     "lint:fix": "eslint . --ext .ts --fix && eslint renderer/ --ext .tsx --fix",
     "test": "CI=true nextron build --no-pack && CI=true xvfb-maybe -- playwright test -c playwright.config.ts",
-    "test-serve": "npx http-server app/ -p 3000",
-    "postinstall": "electron-builder install-app-deps",
-    "publish": "electron-builder -p onTag",
-    "flatpak-build": "nextron build --no-pack && electron-builder --dir"
+    "test-serve": "npx http-server app/ -p 3000"
   },
   "dependencies": {
     "@playwright/test": "^1.47.0",

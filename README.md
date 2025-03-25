@@ -1,5 +1,5 @@
 # Greenlight xHome Only Version
-- Remove `electron` to make greenlight can be serve in headless
+- Remove `electron` to make greenlight can be served in headless
 - Use MSAL instead of XAL to make the login process can be done by another devices
 - Enable WebUI by default
 - Remove xCloud because MSAL doesn't support xCloud

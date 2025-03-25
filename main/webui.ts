@@ -22,11 +22,9 @@ export default class WebUI {
 
         // this._application.log('webui', 'Settings:', settings, rawSettings)
 
-        if(settings.webui_autostart === true){
-            this.startServer(settings.webui_port)
-        } else {
-            this._application._store.set('settings', {...settings, webui_enabled: false})
-        }
+
+        this.startServer(settings.webui_port)
+        
     }
 
     startServer(port:number = 3000){
@@ -59,12 +57,12 @@ export default class WebUI {
                         data: args.data,
                     }))
                     
-                    this._application._mainWindow.webContents.send(channel, {
-                        action: args.action,
-                        id: args.id,
-                        data: args.data,
-                        error: args.error,
-                    })
+                    // this._application._mainWindow.webContents.send(channel, {
+                    //     action: args.action,
+                    //     id: args.id,
+                    //     data: args.data,
+                    //     error: args.error,
+                    // })
                 }
             }
 

@@ -1,8 +1,6 @@
-import { app as ElectronApp, BrowserWindow, dialog } from 'electron'
-import serve from 'electron-serve'
-import Store from 'electron-store'
+import Store from './helpers/store'
 import Debug from 'debug'
-import { createWindow, xboxWorker, updater } from './helpers'
+import { xboxWorker } from './helpers'
 import Authentication from './authentication'
 import Ipc from './ipc'
 import WebUI from './webui'
@@ -41,29 +39,20 @@ export default class Application {
         console.log(__filename+'[constructor()] Starting Greenlight v'+pkg.version)
         this._log = Debug('greenlight')
 
-        ElectronApp.commandLine.appendSwitch('enable-features', 'VaapiIgnoreDriverChecks,VaapiVideoDecoder,PlatformHEVCDecoderSupport,CanvasOopRasterization')
-        // ElectronApp.commandLine.appendSwitch('disable-features', 'UseChromeOSDirectVideoDecoder');
-        ElectronApp.commandLine.appendSwitch('enable-gpu-rasterization')
-        ElectronApp.commandLine.appendSwitch('enable-oop-rasterization')
-        ElectronApp.commandLine.appendSwitch('accelerated-video-decode')
-        ElectronApp.commandLine.appendSwitch('ozone-platform-hint', 'x11')
-        ElectronApp.commandLine.appendSwitch('ignore-gpu-blocklist')
-        // ElectronApp.commandLine.appendSwitch('enable-zero-copy');
-
         this.readStartupFlags()
-        this.loadApplicationDefaults()
-
-        // ElectronApp.removeAsDefaultProtocolClient('ms-xal-public-beta-000000004c20a908')
         
         this._ipc = new Ipc(this)
         this._authentication = new Authentication(this)
 
         this._ipc.startUp()
         this._webUI = new WebUI(this)
+
+        this.loadApplicationDefaults()
     }
 
     log(namespace = 'application', ...args){
         this._log.extend(namespace)(...args)
+        console.log(namespace, ...args)
     }
 
     getStartupFlags(){
@@ -95,57 +84,9 @@ export default class Application {
     }
 
     loadApplicationDefaults(){
-        if(this._isProduction === true && this._isCi === false) {
-            serve({ directory: 'app' })
-
-        } else if(this._isCi === true) {
-            const random = Math.random()*100
-            ElectronApp.setPath('userData', `${ElectronApp.getPath('userData')} (${random})`)
-            ElectronApp.setPath('sessionData', `${ElectronApp.getPath('userData')} (${random})`)
-            this._store.delete('user')
-            this._store.delete('auth')
-
-            serve({ directory: 'app' })
-        } else {
-            
-            ElectronApp.setPath('userData', `${ElectronApp.getPath('userData')} (development)`)
+        if(! this._authentication.checkAuthentication()){
+            this._authentication.startAuthflow()
         }
-
-        ElectronApp.whenReady().then(() => {
-            updater({
-                // debug: true,
-                silent: true,
-                prereleases: (ElectronApp.getVersion().includes('beta')) ? true : false,
-            }, this)
-
-            this.log('electron', __filename+'[loadApplicationDefaults()] Electron has been fully loaded. Ready to open windows')
-
-            this.openMainWindow()
-            this._authentication.startWebviewHooks()
-        
-            // Check authentication
-            if(! this._authentication.checkAuthentication()){
-                this._authentication.startAuthflow()
-            }
-
-        }).catch((error) => {
-            this.log('electron', __filename+'[loadApplicationDefaults()] Electron has failed to load:', error)
-        })
-          
-        ElectronApp.on('window-all-closed', () => {
-            if(this._isMac === true){
-                this.log('electron', __filename+'[loadApplicationDefaults()] Electron detected that all windows are closed. Running in background...')
-
-            } else {
-                this.log('electron', __filename+'[loadApplicationDefaults()] Electron detected that all windows are closed. Quitting app...')
-                ElectronApp.quit()
-            }
-        })
-
-        ElectronApp.on('activate', () => {
-            (this._mainWindow !== undefined) ? this._mainWindow.show() : this.openMainWindow() 
-        })
-        ElectronApp.on('before-quit', () => this._isQuitting = true)
     }
 
     _webApi:xboxWebApi
@@ -192,81 +133,11 @@ export default class Application {
 
         }).catch((error) => {
             this.log('electron', __filename+'[authenticationCompleted()] Failed to retrieve user profile:', error)
-            dialog.showMessageBox({
-                message: 'Error: Failed to retrieve user profile:'+ JSON.stringify(error),
-                type: 'error',
-            })
-        })
-    }
-
-    openMainWindow(){
-        this.log('electron', __filename+'[openMainWindow()] Creating new main window')
-
-        const windowOptions:any = {
-            title: 'Greenlight',
-            backgroundColor: 'rgb(26, 27, 30)',
-        }
-        if(this._startupFlags.fullscreen === true){
-            windowOptions.fullscreen = true
-        }
-
-        this._mainWindow = createWindow('main', {
-            width: 1280,
-            height: 800,
-            ...windowOptions,
-        })
-
-        this._mainWindow.on('show', () => {
-            this.log('electron', __filename+'[openMainWindow()] Showing Main window.')
-        })
-
-        this._mainWindow.on('close', (event) => {
-            if(this._isMac === true && this._isQuitting === false){
-                event.preventDefault()
-                this.log('electron', __filename+'[openMainWindow()] Main window has been hidden')
-                this._mainWindow.hide()
-            } else {
-                this.log('electron', __filename+'[openMainWindow()] Main window has been closed')
-                this._mainWindow = undefined
-            }
-        })
-
-        if (this._isProduction === true && this._isCi === false) {
-            this._mainWindow.loadURL('app://./home.html')
-        } else {
-            const port = process.argv[2] || 3000
-            this._mainWindow.loadURL(`http://localhost:${port}/home`)
             
-            if(this._isCi !== true){
-                this._mainWindow.webContents.openDevTools()
-                this.openGPUWindow()
-            }
-        }
-    }
-
-    _gpuWindow
-
-    openGPUWindow(){
-        this._gpuWindow = new BrowserWindow({
-            width: 800,
-            height: 600,
         })
-
-        // Load chrome://gpu
-        this._gpuWindow.loadURL('chrome://gpu')
-
-        // Open DevTools
-        this._gpuWindow.webContents.openDevTools()
     }
 
-    quit(){
-        ElectronApp.quit()
-    }
-
-    restart(){
-        this.quit()
-        ElectronApp.relaunch()
-    }
+    
 }
 
 new Application()

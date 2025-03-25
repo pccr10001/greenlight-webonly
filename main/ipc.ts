@@ -5,7 +5,6 @@ import IpcxCloud from './ipc/xcloud'
 import IpcApp from './ipc/app'
 import IpcSettings from './ipc/settings'
 
-import { ipcMain } from 'electron'
 
 interface IpcChannels {
     streaming: IpcStreaming;
@@ -32,11 +31,11 @@ export default class Ipc {
             settings: new IpcSettings(this._application),
         }
 
-        for(const channel in this._channels){
-            ipcMain.on(channel, (event, args) => {
-                this._channels[channel].onEvent(channel, event, args) 
-            })
-        }
+        // for(const channel in this._channels){
+        //     ipcMain.on(channel, (event, args) => {
+        //         this._channels[channel].onEvent(channel, event, args) 
+        //     })
+        // }
         
     }
 

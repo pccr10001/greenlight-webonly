@@ -12,6 +12,7 @@ interface AuthProps {
   gamerpic?: string;
   gamerscore?: string;
   isLoading?: boolean;
+  userCode?: string;
 }
 
 function Auth({
@@ -20,6 +21,7 @@ function Auth({
     gamerpic,
     gamerscore,
     isLoading = false,
+    userCode,
 }: AuthProps) {
 
     function startAuthFlow(){
@@ -73,7 +75,7 @@ function Auth({
                                 <h1>Login with Xbox</h1>
                   
                                 <p>
-                    Please authenticate below to access xCloud and xHome Streaming
+                                    {userCode !== '' ? `Please go to https://microsoft.com/link and use this code: ${userCode} to continue login` : 'Please authenticate below to access xCloud and xHome Streaming'}
                                 </p>
 
                                 <Button label="Login" className='btn-primary' onClick={ () => {
@@ -82,6 +84,7 @@ function Auth({
                                 <Button label="Clear data" className='btn' onClick={ () => {
                                     clearData() 
                                 } }></Button>
+                                
                             </div>) }
                         </Card>:<Card><div style={{
                             textAlign: 'center',
@@ -89,6 +92,7 @@ function Auth({
                     }
                 </div>
             </div>
+            
         </React.Fragment>
     )
 }

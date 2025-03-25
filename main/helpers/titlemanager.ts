@@ -1,6 +1,6 @@
 import Application from '../application'
 import HTTP from './http'
-import Store from 'electron-store'
+import Store from './store'
 
 interface titleInfoArgs {
     ProductTitle: string;
@@ -24,7 +24,7 @@ interface FilterArgs {
 export default class TitleManager {
 
     _application:Application
-    _store = new Store()
+    _store = new Store('titles.json')
     _http:HTTP
 
     _xCloudTitles = {}

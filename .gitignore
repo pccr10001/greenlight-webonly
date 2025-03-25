@@ -3,3 +3,6 @@ node_modules
 .next
 app
 dist
+store.json
+auth.json
+titles.json

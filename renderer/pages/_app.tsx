@@ -29,10 +29,13 @@ export default function MyApp({ Component, pageProps }) {
         gamerpic: '',
         gamerscore: '',
         level: '',
+        userCode: '',
+        authError: '',
     })
     // const [headerLinks, setHeaderLinks] = React.useState([])
     // const [streamingMode, setStreamingMode] = React.useState(false)
     const [isLoading, setIsLoading] = React.useState(false)
+    const [userCode, setUserCode] = React.useState('')
 
     React.useEffect(() => {
         Ipc.send('app', 'loadCachedUser').then((user) => {
@@ -42,6 +45,8 @@ export default function MyApp({ Component, pageProps }) {
                 gamerpic: user.gamerpic,
                 gamerscore: user.gamerscore,
                 level: user.level,
+                userCode: '',
+                authError:'',
             })
         })
 
@@ -50,6 +55,10 @@ export default function MyApp({ Component, pageProps }) {
             Ipc.send('app', 'getAuthState').then((args) => {
                 console.log('Received AuthState:', args)
         
+                if(args.userCode !== ''){
+                    setUserCode(args.userCode)
+                }
+
                 if(args.isAuthenticating === true){
                     setIsLoading(true)
                     setPrevUserState({ ...prevUserState, ...args.user})
@@ -115,7 +124,12 @@ export default function MyApp({ Component, pageProps }) {
                 <Footer />
             </React.Fragment>)
 
-    } else {
+    } else if (userCode !== ''){
+        appBody = (
+            <React.Fragment>
+                <Auth signedIn={ prevUserState.signedIn} gamertag={ prevUserState.gamertag } gamerpic={ prevUserState.gamerpic } gamerscore={ prevUserState.gamerscore } isLoading={ isLoading } userCode={ userCode }/>
+            </React.Fragment>)
+    }else{
         appBody = (
             <React.Fragment>
                 <Auth signedIn={ prevUserState.signedIn} gamertag={ prevUserState.gamertag } gamerpic={ prevUserState.gamerpic } gamerscore={ prevUserState.gamerscore } isLoading={ isLoading } />

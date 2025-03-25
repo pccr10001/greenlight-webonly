@@ -1,9 +1,9 @@
 import { TokenStore } from 'xal-node'
-import Store from 'electron-store'
+import Store from './store'
 
 export default class AuthTokenStore extends TokenStore {
 
-    private _store = new Store()
+    private _store = new Store('auth.json')
 
     load() {
         const tokens = this._store.get('user.tokenstore', '{}') as string

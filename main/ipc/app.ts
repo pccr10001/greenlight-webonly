@@ -1,6 +1,4 @@
 import IpcBase from './base'
-import { session } from 'electron'
-import electron from 'electron'
 
 interface setForceRegionIpArgs {
     ip:string;
@@ -42,6 +40,8 @@ export default class IpcApp extends IpcBase {
                 isAuthenticating: this._application._authentication._isAuthenticating,
                 isAuthenticated: this._application._authentication._isAuthenticated,
                 user: this.getUserState(),
+                userCode: this._application._authentication._userCode,
+                authError: this._application._authentication._authError,
             })
         })
     }
@@ -56,36 +56,28 @@ export default class IpcApp extends IpcBase {
     quit(){
         return new Promise<boolean>((resolve) => {
             resolve(true)
-            setTimeout(() => {
-                this._application.quit()
-            }, 100)
+           
         })
     }
     
     restart(){
         return new Promise<boolean>((resolve) => {
             resolve(true)
-            setTimeout(() => {
-                this._application.restart()
-            }, 100)
+            
         })
     }
 
     clearData(){
         return new Promise<boolean>((resolve, reject) => {
-            session.defaultSession.clearStorageData().then(() => {
+            
                 this._application._authentication._tokenStore.clear()
                 this._application._store.delete('user')
                 this._application._store.delete('auth')
 
                 this._application.log('authentication', __filename+'[startIpcEvents()] Received restart request. Restarting application...')
-                this._application.restart()
                 resolve(true)
+                process.exit()
 
-            }).catch((error) => {
-                this._application.log('authentication', __filename+'[startIpcEvents()] Error: Failed to clear local storage!')
-                reject(error)
-            })
         })
     }
 
@@ -134,15 +126,11 @@ export default class IpcApp extends IpcBase {
     async debug(){
         const returnValue = []
 
-        const gpuInfo = await electron.app.getGPUInfo('complete')
-
         // Application Values
         returnValue.push({
             name: 'Application',
             data: [
                 { name: 'Name', value: 'Greenlight' },
-                { name: 'Version', value: electron.app.getVersion() },
-                { name: 'GPU Info', value: gpuInfo.auxAttributes.glRenderer },
             ],
         })
 
@@ -170,15 +158,13 @@ export default class IpcApp extends IpcBase {
         })
 
         // Tokenstore values
-        const xCloudTokenValid = (this._application._authentication._xal._xcloudToken !== null) ? this._application._authentication._xal._xcloudToken.getSecondsValid() : 'None'
+        const xCloudTokenValid = (this._application._authentication._xcloudToken !== null) ? this._application._authentication._xcloudToken.getSecondsValid() : 'None'
         returnValue.push({
-            name: 'XAL',
+            name: 'MSAL',
             data: [
                 { name: 'User token expires in', value: this._application._authentication._tokenStore.getUserToken().getSecondsValid() },
-                { name: 'Sisu token expires in', value: this._application._authentication._tokenStore.getSisuToken().getSecondsValid() },
-                { name: 'Authenticated user', value: this._application._authentication._tokenStore.getSisuToken().getGamertag() + ' ('+this._application._authentication._tokenStore.getSisuToken().getUserHash()+')' },
                 { name: '', value: '' },
-                { name: 'xHome Token validity', value: this._application._authentication._xal._xhomeToken.getSecondsValid() },
+                { name: 'xHome Token validity', value: this._application._authentication._xhomeToken.getSecondsValid() },
                 { name: 'xCloud Token validity', value: xCloudTokenValid },
 
             ],

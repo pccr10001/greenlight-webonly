@@ -20,8 +20,8 @@ export default class Authentication {
     _authError: string = ''
     _tokenRefresher: any = 0
 
-    _xhomeToken: any = null
-    _xcloudToken: any = null
+    _xhomeToken: any = undefined
+    _xcloudToken: any = undefined
 
     constructor(application:Application){
         this._application = application
@@ -70,25 +70,30 @@ export default class Authentication {
                     if (webToken === undefined) {
                         throw new Error('No gssv token found. Please authenticate first.')
                     }
-                    this._msal.getStreamToken(gssvToken.data.Token, 'xhome').then((xHomeToken) => {
-                        this._application.log('authenticationV2', '[startSilentFlow()] xHome Tokens have been received.')
-                        this._xhomeToken = xHomeToken
-                        this._xcloudToken = null
+                    this.getStreamingToken(gssvToken.data.Token).then((streamingTokens) => {
+
+                        if(streamingTokens.xCloudToken !== null){
+                            this._application.log('authenticationV2', '[startSilentFlow()] Retrieved both xHome and xCloud tokens')
+                            this._appLevel = 2
+                        } else {
+                            this._application.log('authenticationV2', '[startSilentFlow()] Retrieved xHome token only')
+                            this._appLevel = 1
+                        }
 
                         if (this._tokenRefresher === 0) {
                             this._tokenRefresher = setInterval(() => {
                                 if (this._xhomeToken.getSecondsValid() < 60 ||
+                                    (this._xcloudToken !== null && this._xcloudToken.getSecondsValid() < 60) ||
                                     this._tokenStore.getUserToken().getSecondsValid() < 60) {
                                     this.startSilentFlow()
                                 }
                             }, 60 * 1000)
                             this._application.log('authenticationV2', '[startSilentFlow()] Token refresher created.')
                         }
-
-                        this._application.authenticationCompleted({ xHomeToken: xHomeToken, xCloudToken: null }, webToken)
+                        this._application.authenticationCompleted({ xHomeToken: this._xhomeToken, xCloudToken: this._xcloudToken }, webToken)
 
                     }).catch((err) => {
-                        this._application.log('authenticationV2', '[startSilentFlow()] Failed to retrieve xHome tokens:', err)
+                        this._application.log('authenticationV2', '[startSilentFlow()] Failed to retrieve streaming tokens:', err)
                     })
 
                 }).catch((err) => {
@@ -125,5 +130,28 @@ export default class Authentication {
             this._application.log('authenticationV2', '[startAuthFlow()] Error getting redirect URI:', err)
             this._authError = 'Error', 'Error request device code. Error details: ' + JSON.stringify(err)
         })
+    }
+
+    async getStreamingToken(gssvToken){
+
+        if(this._xhomeToken === undefined || this._xhomeToken.getSecondsValid() <= 60){
+            this._xhomeToken = await this._msal.getStreamToken(gssvToken, 'xhome')
+        }
+
+        const fri = this._application._store.get('force_region_ip')
+
+        if(this._xcloudToken === undefined || this._xcloudToken.getSecondsValid() <= 60){
+            try {
+                this._xcloudToken = await this._msal.getStreamToken(gssvToken, 'xgpuweb', fri)
+            } catch(error){
+                try {
+                    this._xcloudToken = await this._msal.getStreamToken(gssvToken, 'xgpuwebf2p', fri)
+                } catch(error){
+                    this._xcloudToken = undefined
+                }
+            }
+        }
+
+        return { xHomeToken: this._xhomeToken, xCloudToken: this._xcloudToken }
     }
 }

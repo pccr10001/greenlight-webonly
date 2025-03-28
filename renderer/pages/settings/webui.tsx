@@ -10,6 +10,7 @@ import { useSettings } from '../../context/userContext'
 function SettingsWebUI() {
     const { settings, setSettings} = useSettings()
     const [webuiRunning, setWebuiRunning] = React.useState(false)
+    const [ accessSecret, setAccessSecret ] = React.useState('')
 
     React.useEffect(() => {
         const webuiStatusInterval = setInterval(() => {
@@ -47,6 +48,17 @@ function SettingsWebUI() {
         })
     }
 
+    function applyAccessSecret(){
+        setSettings({
+            ...settings,
+            webui_access_secret: accessSecret,
+        })
+    }
+
+    function handleAccessSecretChange(e) {
+        setAccessSecret(e.target.value)
+    }
+
     return (
         <React.Fragment>
             <Head>
@@ -76,6 +88,15 @@ function SettingsWebUI() {
                         <label>Port</label>
                         <label style={{ minWidth: 0 }}>
                             <input type="text" onChange={ setWebUIPort} className="text" placeholder="example: 9003" value={ settings.webui_port || 9003 } />
+                        </label>
+                    </p>
+                    <p>
+                        <label>Access Secret: { settings.webui_access_secret !== undefined && settings.webui_access_secret ? <a style={{ color: 'green' }}>Enabled</a> : <a style={{ color: 'red' }}>Disabled</a> }</label>
+                        <label style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <input type="text" onChange={ handleAccessSecretChange} className="text" placeholder="example: SUPERSECRET" />
+                                <Button onClick={ applyAccessSecret } className={ 'btn-small' } label={ 'Apply' }></Button>
+                            </div>
                         </label>
                     </p>
                 </Card>

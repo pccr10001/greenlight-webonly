@@ -42,4 +42,5 @@ export const defaultSettings = {
     // WebUI
     webui_autostart: false,
     webui_port: 9003,
+    webui_access_secret: '',
 }

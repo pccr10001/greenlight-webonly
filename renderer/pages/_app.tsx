@@ -31,6 +31,7 @@ export default function MyApp({ Component, pageProps }) {
         level: '',
         userCode: '',
         authError: '',
+        accessSecret: '',
     })
     // const [headerLinks, setHeaderLinks] = React.useState([])
     // const [streamingMode, setStreamingMode] = React.useState(false)
@@ -38,6 +39,7 @@ export default function MyApp({ Component, pageProps }) {
     const [userCode, setUserCode] = React.useState('')
 
     React.useEffect(() => {
+
         Ipc.send('app', 'loadCachedUser').then((user) => {
             setPrevUserState({
                 signedIn: user.signedIn,
@@ -47,6 +49,7 @@ export default function MyApp({ Component, pageProps }) {
                 level: user.level,
                 userCode: '',
                 authError:'',
+                accessSecret: '',
             })
         })
 

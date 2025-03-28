@@ -43,7 +43,13 @@ export default class WebUI {
             res.redirect('/home')
         })
 
-        this._express.ws('/ipc', (ws) => {
+        this._express.ws('/ipc', (ws, req) => {
+
+            const secret = this._application._store.get('settings', defaultSettings).webui_access_secret
+            if( secret !== undefined && secret !== '' && req.query.secret !== secret){
+                ws.close()
+                return
+            }
 
             // Websocket ipc hack
             for(const channel in this._ipc._channels){

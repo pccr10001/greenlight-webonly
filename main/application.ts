@@ -128,7 +128,9 @@ export default class Application {
             }
 
             // Run workers
-            this._xboxWorker = new xboxWorker(this)
+            if(this._xboxWorker === undefined){
+                this._xboxWorker = new xboxWorker(this)
+            }
             this._ipc.onUserLoaded()
 
         }).catch((error) => {

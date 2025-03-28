@@ -48,7 +48,14 @@ export default {
     },
 
     websocketFallbackApi(){
-        const websocket = new WebsocketIPC((window.location.protocol === 'http:'?'ws://':'wss://')+window.location.hostname+':'+window.location.port+'/ipc')
+
+        if(window.location.search.includes('secret=')){
+            const secret = window.location.search.split('=')[1]
+            sessionStorage.setItem('accessSecret', secret)
+        }
+
+        const websocket = new WebsocketIPC((window.location.protocol === 'http:'?'ws://':'wss://')+window.location.hostname+':'+
+            window.location.port+'/ipc'+(sessionStorage.getItem('accessSecret')?'?secret='+sessionStorage.getItem('accessSecret'):''))
 
         console.log('Injecting Greenlight Websocker IPC')
 

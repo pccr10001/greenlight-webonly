@@ -1,9 +1,13 @@
 import fs from 'fs'
+import path from 'path'
 
 export default class Store {
     constructor(filename = 'store.json') {
         this.filename = filename
         this.data = {}
+        if (!fs.existsSync('data')) {
+            fs.mkdirSync('data')
+        }
         this.load()
     }
 
@@ -12,7 +16,7 @@ export default class Store {
     
     load() {
         try {
-            if (fs.existsSync(this.filename)) {
+            if (fs.existsSync(path.join('data', this.filename))) {
                 this.data = JSON.parse(fs.readFileSync(this.filename, 'utf8'))
             }
         } catch (error) {
@@ -30,7 +34,7 @@ export default class Store {
     }
 
     save() {
-        fs.writeFileSync(this.filename, JSON.stringify(this.data, null, 2))
+        fs.writeFileSync(path.join('data', this.filename), JSON.stringify(this.data, null, 2))
     }
 
     delete(key) {

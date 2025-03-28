@@ -100,7 +100,12 @@ export default class Application {
         this._xHomeApi = new xCloudApi(this, streamingTokens.xHomeToken.getDefaultRegion().baseUri.substring(8), streamingTokens.xHomeToken.data.gsToken, 'home')
 
         if(streamingTokens.xCloudToken !== null){
-            this._xCloudApi = new xCloudApi(this, streamingTokens.xCloudToken.getDefaultRegion().baseUri.substring(8), streamingTokens.xCloudToken.data.gsToken, 'cloud')
+            try{
+                this._xCloudApi = new xCloudApi(this, streamingTokens.xCloudToken.getDefaultRegion().baseUri.substring(8), streamingTokens.xCloudToken.data.gsToken, 'cloud')
+            } catch(error) {
+                this._authentication._appLevel = 1
+                this.log('electron', __filename+'[authenticationCompleted()] Failed to create xCloudApi:', error)
+            }
         }
 
         this._webApi = new xboxWebApi({

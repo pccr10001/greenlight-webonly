@@ -17,7 +17,7 @@ export default class Store {
     load() {
         try {
             if (fs.existsSync(path.join('data', this.filename))) {
-                this.data = JSON.parse(fs.readFileSync(this.filename, 'utf8'))
+                this.data = JSON.parse(fs.readFileSync(path.join('data', this.filename), 'utf8'))
             }
         } catch (error) {
             console.error('Failed to load store:', error)

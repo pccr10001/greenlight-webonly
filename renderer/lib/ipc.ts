@@ -48,7 +48,7 @@ export default {
     },
 
     websocketFallbackApi(){
-        const websocket = new WebsocketIPC('ws://'+window.location.hostname+':'+window.location.port+'/ipc')
+        const websocket = new WebsocketIPC((window.location.protocol === 'http:'?'ws://':'wss://')+window.location.hostname+':'+window.location.port+'/ipc')
 
         console.log('Injecting Greenlight Websocker IPC')
 

@@ -52,7 +52,6 @@ export default class Application {
 
     log(namespace = 'application', ...args){
         this._log.extend(namespace)(...args)
-        console.log(namespace, ...args)
     }
 
     getStartupFlags(){

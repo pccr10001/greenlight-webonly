@@ -45,7 +45,7 @@ export default class WebUI {
 
         this._express.get('/tesla', (req, res) => {
             const originalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`
-            const encodedUrl = encodeURIComponent(originalUrl.replace('/tesla', ''))
+            const encodedUrl = encodeURIComponent(originalUrl.replace('/tesla', '/home'))
             res.redirect(`https://www.youtube.com/redirect?q=${encodedUrl}`)
         })
 

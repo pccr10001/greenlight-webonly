@@ -84,7 +84,7 @@ Click on the Xbox logo at the top-left. It will ask you to confirm to close the 
 
 ## Docker
 ```
-docker run -it --name greenlight -p 9003:9003 -v `pwd`/data:/app/data pccr10001:greenlight-webonly
+docker run -itd --name greenlight -p 9003:9003 -v `pwd`/data:/app/data pccr10001/greenlight:latest
 ```
 
 ## Local Development

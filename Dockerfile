@@ -1,8 +1,8 @@
-FROM node:16
+FROM node:18
 
 WORKDIR /app
 COPY . /app
-RUN next build renderer && next export -o app renderer
+RUN yarn && npx next build renderer && npx next export -o app renderer && yarn add tsx
 COPY . .
 EXPOSE 9003
 

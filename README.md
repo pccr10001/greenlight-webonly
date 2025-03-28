@@ -1,10 +1,12 @@
 # Greenlight Web Only Version
-- Remove `electron` to make greenlight can be served in headless
-- Use MSAL instead of XAL to make the login process can be done by another devices
-- Enable WebUI by default
-- Working well in Tesla in-vehicle browser
-- Access secret for WebUI
-- Settings store in json file
+- Remove `electron` to make greenlight can be served in headless.
+- Use MSAL instead of XAL to make the login process can be done by another devices.
+- Enable WebUI by default.
+- Working well in Tesla in-vehicle browser.
+- Access secret for WebUI.
+- Settings store in json files.
+- Refresh tokens if the server is running.
+- Enable fullscreen in Tesla in-vehicle browser.
 
 [![Build/release](https://github.com/unknownskl/greenlight/actions/workflows/build.yml/badge.svg)](https://github.com/unknownskl/greenlight/actions/workflows/build.yml)
 
@@ -86,6 +88,9 @@ Click on the Xbox logo at the top-left. It will ask you to confirm to close the 
 ```
 docker run -itd --name greenlight -p 9003:9003 -v `pwd`/data:/app/data pccr10001/greenlight:latest
 ```
+
+## Tesla
+* You can navigate to `/tesla` to enable fullscreen on Tesla in-vehicle browser, add `?secret=SECRET` if needed.
 
 ## Local Development
 

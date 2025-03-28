@@ -43,6 +43,12 @@ export default class WebUI {
             res.redirect('/home')
         })
 
+        this._express.get('/tesla', (req, res) => {
+            const originalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`
+            const encodedUrl = encodeURIComponent(originalUrl.replace('/tesla', ''))
+            res.redirect(`https://www.youtube.com/redirect?q=${encodedUrl}`)
+        })
+
         this._express.ws('/ipc', (ws, req) => {
 
             const secret = this._application._store.get('settings', defaultSettings).webui_access_secret

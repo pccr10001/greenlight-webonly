@@ -1,4 +1,9 @@
-# Greenlight
+# Greenlight xHome Only Version
+- Remove `electron` to make greenlight can be served in headless
+- Use MSAL instead of XAL to make the login process can be done by another devices
+- Enable WebUI by default
+- Remove xCloud because MSAL doesn't support xCloud
+- Remote Play is working in Tesla in-vehicle browser
 
 [![Build/release](https://github.com/unknownskl/greenlight/actions/workflows/build.yml/badge.svg)](https://github.com/unknownskl/greenlight/actions/workflows/build.yml)
 

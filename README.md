@@ -3,6 +3,8 @@
 - Use MSAL instead of XAL to make the login process can be done by another devices
 - Enable WebUI by default
 - Working well in Tesla in-vehicle browser
+- Access secret for WebUI
+- Settings store in json file
 
 [![Build/release](https://github.com/unknownskl/greenlight/actions/workflows/build.yml/badge.svg)](https://github.com/unknownskl/greenlight/actions/workflows/build.yml)
 
@@ -75,6 +77,15 @@ For console use `F000000000000000` format and for xCloud use `xcloud_<title>`.
 ## To close the application
 
 Click on the Xbox logo at the top-left. It will ask you to confirm to close the window.
+
+## Access Secret
+* Setup the access secret in `Settings` then click `APPLY`
+* Append `?secret=SECRET` after the URL, like `http://127.0.0.1:9003/?secret=SECRET`
+
+## Docker
+```
+docker run -it --name greenlight -p 9003:9003 -v `pwd`/data:/app/data pccr10001:greenlight-webonly
+```
 
 ## Local Development
 

@@ -81,7 +81,7 @@ export default class WebUI {
             for(const channel in this._ipc._channels){
 
                 this._ipc._channels[channel].send = (channel, args) => {
-                    console.log('HOOKED IPC:', channel, args)
+                    //console.log('HOOKED IPC:', channel, args)
                     ws.send(JSON.stringify({
                         channel: channel,
                         id: args.id,

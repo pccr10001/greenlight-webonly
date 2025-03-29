@@ -40,42 +40,59 @@ export default class TitleManager {
         this._xCloudTitles = JSON.parse(this._store.get('titles', '{}'))
     }
 
-    setCloudTitles(titles){
+    setCloudTitles(titles) {
         return new Promise((resolve, reject) => {
+            // Keep a backup of existing titles before clearing
+            const previousTitles = { ...this._xCloudTitles }
             this._xCloudTitles = {}
 
-            for(const title in titles.results){
+            // Check if titles or titles.results is valid
+            if (!titles || !titles.results) {
+                this._application.log('TitleManager', 'Invalid titles data received')
+                this._xCloudTitles = previousTitles // Restore previous titles
+                return resolve(true)
+            }
+
+            for (const title in titles.results) {
+                if (!titles.results[title] || !titles.results[title].titleId) {
+                    continue
+                }
+                
                 const titleItem = new Title(titles.results[title])
                 this._xCloudTitles[titles.results[title].titleId] = titleItem
                 
-                this._productIdQueue.push(titles.results[title].details.productId)
+                // If we have catalog details from cache, restore them
+                const prevTitle = previousTitles[titles.results[title].titleId]
+                if (prevTitle && prevTitle.catalogDetails) {
+                    titleItem.setCatalogDetails(prevTitle.catalogDetails)
+                }
+                
+                if (titles.results[title].details && titles.results[title].details.productId) {
+                    this._productIdQueue.push(titles.results[title].details.productId)
+                }
             }
 
-            if(this._productIdQueue.length > 0){
-                this._http.post('catalog.gamepass.com', '/v3/products?market=US&language=en-US&hydration=RemoteHighSapphire0', { // RemoteLowJade0
+            if (this._productIdQueue.length > 0) {
+                this._http.post('catalog.gamepass.com', '/v3/products?market=US&language=en-US&hydration=RemoteHighSapphire0', {
                     'Products': this._productIdQueue,
                 }, {
                     'ms-cv': 0,
                     'calling-app-name': 'Xbox Cloud Gaming Web',
                     'calling-app-version': '21.0.0',
-
-                }).then((result:any) => {
-                    this.populateTitleInfo(result.Products)
+                }).then((result: any) => {
+                    if (result && result.Products) {
+                        this.populateTitleInfo(result.Products)
+                    }
                     resolve(true)
-
                 }).catch((error) => {
                     console.log('Error:', error)
-                    if (this._xCloudTitles === undefined || this._xCloudTitles === null) {
-                        this._xCloudTitles = JSON.parse(this._store.get('titles', '{}'))
-                    }
+                    // Don't clear titles on error - keep what we have
+                    this._application.log('TitleManager', 'Failed to fetch catalog details, using cached data')
                     resolve(true)
                 })
             } else {
                 resolve(true)
             }
-
-            // We got all info!
-            // console.log(this)
         })
     }
 
@@ -83,28 +100,35 @@ export default class TitleManager {
         return this._http.get('catalog.gamepass.com', '/sigls/v2?id=f13cf6b4-57e6-4459-89df-6aec18cf0538&market=US&language=en-US')
     }
 
-    populateTitleInfo(titleInfo:titleInfoArgs[]){
-        for(const product in titleInfo){
-            const xCloudTitle = titleInfo[product].XCloudTitleId
+    populateTitleInfo(titleInfo: titleInfoArgs[]) {
+        if (!titleInfo || !Array.isArray(titleInfo)) {
+            this._application.log('TitleManager', 'Invalid titleInfo received')
+            return
+        }
 
-            if(titleInfo[product] === undefined || titleInfo[product] === null){
-                this._application.log('TitleManager', 'Title not found in cache:', xCloudTitle, titleInfo[product])
+        for (const product in titleInfo) {
+            if (!titleInfo[product] || !titleInfo[product].XCloudTitleId) {
+                this._application.log('TitleManager', 'Invalid product data:', titleInfo[product])
                 continue
             }
 
-            if(this._xCloudTitles[xCloudTitle] !== undefined){
-                this._xCloudTitles[xCloudTitle].setCatalogDetails(titleInfo[product])
+            const xCloudTitle = titleInfo[product].XCloudTitleId
 
+            if (this._xCloudTitles[xCloudTitle] !== undefined) {
+                this._xCloudTitles[xCloudTitle].setCatalogDetails(titleInfo[product])
             } else {
-                const altTitle = this.findTitleByProductId(titleInfo[product].StoreId)
-                if(altTitle !== undefined){
-                    altTitle.setCatalogDetails(titleInfo[product])
-                    
-                } else {
-                    this._application.log('TitleManager', 'Title not found in cache:', titleInfo[product].XCloudTitleId, titleInfo[product].StoreId, titleInfo[product])
+                const productId = titleInfo[product].StoreId
+                if (productId) {
+                    const altTitle = this.findTitleByProductId(productId)
+                    if (altTitle !== undefined) {
+                        altTitle.setCatalogDetails(titleInfo[product])
+                    } else {
+                        this._application.log('TitleManager', 'Title not found in cache:', titleInfo[product].XCloudTitleId, titleInfo[product].StoreId)
+                    }
                 }
             }
         }
+        
         this._store.set('titles', JSON.stringify(this._xCloudTitles))
     }
 

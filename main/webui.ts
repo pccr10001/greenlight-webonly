@@ -46,7 +46,27 @@ export default class WebUI {
         this._express.get('/tesla', (req, res) => {
             const originalUrl = `${process.env.REDIRECT_HTTPS === '1'?'https':'http'}://${req.get('host')}${req.originalUrl}`
             const encodedUrl = encodeURIComponent(originalUrl.replace('/tesla', '/home'))
-            res.redirect(`https://www.youtube.com/redirect?q=${encodedUrl}`)
+            res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Redirecting...</title>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Redirecting to fullscreen mode...</h2>
+                        <div class="spinner"></div>
+                        <p>Please wait, you will be redirected in 2 seconds.</p>
+                    </div>
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = "${encodedUrl}";
+                        }, 2000);
+                    </script>
+                </body>
+                </html>
+            `)
         })
 
         this._express.ws('/ipc', (ws, req) => {

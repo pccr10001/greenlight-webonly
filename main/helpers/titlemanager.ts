@@ -37,6 +37,7 @@ export default class TitleManager {
     constructor(application){
         this._application = application
         this._http = new HTTP(this._application)
+        this._xCloudTitles = JSON.parse(this._store.get('titles', '{}'))
     }
 
     setCloudTitles(titles){
@@ -64,7 +65,10 @@ export default class TitleManager {
 
                 }).catch((error) => {
                     console.log('Error:', error)
-                    reject(error)
+                    if (this._xCloudTitles === undefined || this._xCloudTitles === null) {
+                        this._xCloudTitles = JSON.parse(this._store.get('titles', '{}'))
+                    }
+                    resolve(true)
                 })
             } else {
                 resolve(true)
@@ -83,6 +87,11 @@ export default class TitleManager {
         for(const product in titleInfo){
             const xCloudTitle = titleInfo[product].XCloudTitleId
 
+            if(titleInfo[product] === undefined || titleInfo[product] === null){
+                this._application.log('TitleManager', 'Title not found in cache:', xCloudTitle, titleInfo[product])
+                continue
+            }
+
             if(this._xCloudTitles[xCloudTitle] !== undefined){
                 this._xCloudTitles[xCloudTitle].setCatalogDetails(titleInfo[product])
 
@@ -96,6 +105,7 @@ export default class TitleManager {
                 }
             }
         }
+        this._store.set('titles', JSON.stringify(this._xCloudTitles))
     }
 
     findTitleByProductId(productId:string){

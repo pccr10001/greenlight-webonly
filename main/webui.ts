@@ -61,7 +61,7 @@ export default class WebUI {
                     </div>
                     <script>
                         setTimeout(function() {
-                            window.location.href = "${encodedUrl}";
+                            window.location.href = "https://www.youtube.com/redirect?q=${encodedUrl}";
                         }, 2000);
                     </script>
                 </body>
